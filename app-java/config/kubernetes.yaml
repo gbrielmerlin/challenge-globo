@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-java
+  labels:
+    app: app-java
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-java
+  template:
+    metadata:
+      labels:
+        app: app-java
+    spec:
+      containers:
+        - name: app-java-container
+          image: ImageName
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms128m -Xmx512m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-java-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: app-java
+  ports:
+    - port: 80
+      targetPort: 8080

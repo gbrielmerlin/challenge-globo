@@ -25,14 +25,14 @@ docker build -t app-python -f config/Dockerfile .
 docker run -e REDIS_HOST=host.docker.internal -p 5000:5000 app-python
 ```
 
-## Kubernetes
-
-Incluído no `kubernetes.yaml`:
-
-- Deployment da app com env `REDIS_HOST=redis-service`
-
-> ⚠️ Você precisa de um service Redis rodando com o nome `redis-service` no cluster.
+## Execução local sem Redis (salvando cache em memória):
+1. Descomente no app.py o bloco comentado:
 
 ```bash
-kubectl apply -f config/kubernetes.yaml
+#app.config['CACHE_TYPE'] = 'SimpleCache'
+#app.config['CACHE_DEFAULT_TIMEOUT'] = 10
+```
+2. Rode o serviço:
+```bash
+python src/main/app/app.py
 ```

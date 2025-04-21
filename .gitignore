@@ -1,0 +1,7 @@
+/app-java/target/
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+**/.idea
+**/__pycache__/

@@ -1,0 +1,45 @@
+env:
+  IMAGE_TAG: ${{ github.run_number }}
+  ECRLINK: "123456789012.dkr.ecr.us-east-1.amazonaws.com" #COLOCAR VALOR BASEADO NA CONTA AWS, como no exemplo
+  ECRNAME: "challenge-images"
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Build Application
+        run: mvn clean package -DskipTests
+
+      - name: Login na AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build e Push da imagem
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECRLINK
+          docker build -t $ECRLINK/$ECRNAME:$IMAGE_TAG -f config/Dockerfile . --progress=plain
+          docker push $ECRLINK/$ECRNAME:$IMAGE_TAG
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Deploy no Kubernetes
+        run: |
+          export ImageName=$ECRLINK/$ECRNAME:$IMAGE_TAG
+          sed -i 's|ImageName|'$ImageName'|g' config/kubernetes.yaml
+          aws eks update-kubeconfig --name eks-challenge
+          kubectl apply -f config/kubernetes.yaml

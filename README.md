@@ -1,2 +1,2 @@
 # challenge-globo
-Repo base para codigo do desafio tecnico da globo
+Repo base para código do desafio técnico da globo
